@@ -1,1 +1,1 @@
-{"default_json_file": "__mytool_target__.json", "default_python_file": "__mytool_target__.py", "default_mode": "-py"}
+{"default_json_file": "__default__.json", "default_python_file": "__default__.py", "default_mode": "-j"}

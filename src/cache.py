@@ -2,7 +2,7 @@ from genericpath import isdir
 from pathlib import Path
 import shutil
 
-__DEFAULT_CACHE__ = "./.mytool_cache/cache"
+__DEFAULT_CACHE__ = "./bin/cache"
 
 
 class Cache():
@@ -102,22 +102,22 @@ class Cache():
 if __name__ == "__main__":
 
         
-    a = Path("C:/Users/morri/OneDrive/Code/Python/Creating-Folder-Structure/A")
+    a = Path().cwd()/ "A"
     if not a.exists():
         a.mkdir()
         a.chmod(0o777)  # Full read/write/execute permissions
 
-    b = Path("C:/Users/morri/OneDrive/Code/Python/Creating-Folder-Structure/B")
+    b = Path().cwd()/ "B"
     if not b.exists():
         b.mkdir()
         b.chmod(0o777)  # Full read/write/execute permissions
 
-    c = Path("C:/Users/morri/OneDrive/Code/Python/Creating-Folder-Structure/C")
+    c = Path().cwd()/ "C"
     if not c.exists():
         c.mkdir()
         c.chmod(0o777)  # Full read/write/execute permissions
 
-    d = Path("C:/Users/morri/OneDrive/Code/Python/Creating-Folder-Structure/D")
+    d = Path().cwd()/ "D"
     if not d.exists():
         d.mkdir()
         d.chmod(0o777)  # Full read/write/execute permissions

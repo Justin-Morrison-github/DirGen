@@ -11,8 +11,8 @@ class Settings():
     }
 
     init_settings = {
-        DEFAULT_JSON_FILE: "__mytool_target__.json",
-        DEFAULT_PYTHON_FILE: "__mytool_target__.py",
+        DEFAULT_JSON_FILE: "__default__.json",
+        DEFAULT_PYTHON_FILE: "__default__.py",
         DEFAULT_MODE: "-j"
     }
 
