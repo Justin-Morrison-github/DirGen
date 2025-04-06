@@ -22,16 +22,18 @@ def create_parser() -> argparse.ArgumentParser:
     arg_parser = argparse.ArgumentParser(description="MyTool - Command Line Options")
 
     options = [
-        {"flags": ("-cache", "--cache"), "action": "store_true", "help": "Cache options"},
-        {"flags": ("-clr", "--clear"), "action": "store_true", "help": "Clear cache"},
-        {"flags": ("-p", "--print"), "action": "store_true", "help": "Print cache"},
-        {"flags": ("-del", "--delete"), "action": "store_true", "help": "Delete cache"},
-        {"flags": ("-r", "--reset"), "action": "store_true", "help": "Reset options"},
-        {"flags": ("-sd", "--set_default"), "action": "store_true", "help": "Set default files"},
-        {"flags": ("-m", "--mode"), "action": "store_true", "help": "Set default mode"},
+        {"flags": ("-c", "--cache"), "action": "store_true", "help": "Cache options"},
+        {"flags": ("-clr", "--clear"), "action": "store_true", "help": "Clear options"},
+        {"flags": ("-m", "--mode"), "action": "store_true", "help": "Mode options"},
         {"flags": ("-t", "--text"), "action": "store_true", "help": "Provide text input"},
         {"flags": ("-j", "--json"), "action": "store_true", "help": "Provide JSON file input"},
         {"flags": ("-py", "--python"), "action": "store_true", "help": "Provide Python file input"},
+        {"flags": ("-f", "--force"), "action": "store_true", "help": "Force operations"},
+        {"flags": ("-del", "--delete"), "action": "store_true", "help": "Delete options"},
+        {"flags": ("-r", "--reset"), "action": "store_true", "help": "Reset options"},
+        {"flags": ("-cfg", "--config"), "action": "store_true", "help": "Provide config/settings options"},
+        {"flags": ("-set", "--set"), "action": "store_true", "help": "Set options"},
+        {"flags": ("-get", "--get"), "action": "store_true", "help": "Get options"},
     ]
 
     for option in options:
@@ -50,19 +52,27 @@ class ArgParser():
         self.base_folder = base_folder
         self.arg_parser: argparse.ArgumentParser = create_parser()
         self.args = None
+        self.parser = None
+        self.files_made = []
 
     def parse(self) -> argparse.Namespace:
         self.args = self.arg_parser.parse_args(self.argv)
 
-        if self.args.reset:
-            return self.reset()
-        if self.args.cache:
-            return self.cache_handler()
-        if self.args.set_default:
-            return self.set_default_handler()
+        # Only allow one operator to be used at once
 
-        # IHandle Defaults
-        if not any([self.args.json, self.args.python, self.args.text]):
+        if self.args.reset:
+            return self.reset_handler()
+        elif self.args.clear:
+            return self.clear_handler()    
+        elif self.args.delete:
+            return self.delete_handler()   
+        elif self.args.set:
+            return self.set_handler()
+        elif self.args.get:
+            return self.get_handler()
+
+        # Handle Defaults
+        elif not any([self.args.json, self.args.python, self.args.text]):
             mode = self.settings.default_mode
             self.args.data = self.settings.default_map[mode]
 
@@ -72,7 +82,43 @@ class ArgParser():
                 self.args.json = True
             elif mode == TEXT_MODE:
                 self.args.text = True
+
+
+        if not self.args.data:
+            if self.args.python:
+                self.args.data = self.settings.default_map[PYTHON_MODE]
+            elif self.args.json:
+                self.args.data = self.settings.default_map[JSON_MODE]
+            elif self.args.text:
+                raise ValueError("parse: No text provided")
+            
+        self.parser = self.get_parser()
+        self.files_made = self.parser.mkdir()
+        self.cache.append(self.files_made)
+
         
+
+    def clear_handler(self):
+        if self.args.cache:
+            self.cache.clear()
+
+    def delete_handler(self):
+        if self.args.cache:
+            self.cache.delete_all_files()
+
+    def get_handler(self):
+        if self.args.cache:
+            self.args.data = str(self.cache)
+        elif self.args.python:
+            self.args.data = self.settings.default_python_file
+        elif self.args.json:
+            self.args.data = self.settings.default_json_file
+        elif self.args.mode:
+            self.args.data = self.settings.default_mode
+        elif self.args.config:
+            self.args.data = str(self.settings)
+        
+        print(self.args.data)
 
     def get_parser(self) -> Parser:
         if self.args.text:
@@ -90,53 +136,31 @@ class ArgParser():
                 self.args.data = self.settings.default_json_file
             parser = JSONParser(self.base_folder, self.args.data)
 
-        else:
-            raise ValueError("mytool: Error Invalid Option")
+        # else:
+        #     raise ValueError("mytool: Error Invalid Option")
 
         return parser
 
-    def cache_handler(self):
-        assert self.args.cache
+    def set_handler(self):
+        if self.args.config:
+            if self.args.mode:
+                self.settings[Settings.DEFAULT_MODE] = "-" + self.args.data
+            elif self.args.python:
+                self.settings[Settings.DEFAULT_PYTHON_FILE] = self.args.data
+            elif self.args.json:
+                self.settings[Settings.DEFAULT_JSON_FILE] = self.args.data
+        else:
+            raise ValueError("set_handler: Invalid Arguement")
 
-        if self.args.clear:
-            self.cache.clear()
-        elif self.args.delete:
+    def reset_handler(self):
+        if self.args.cache:
             self.cache.delete_all_files()
-        else:
-            self.cache.print()
-            # raise ValueError("cache_handler: Invalid Arguement")
+        elif self.args.config:
+            self.settings.reset()
+        elif not self.args.config and not self.args.cache:
+            self.cache.delete_all_files()
+            self.settings.reset()
 
-    def set_default_handler(self):
-        assert self.args.set_default
-
-        if self.args.mode:
-            self.settings[Settings.DEFAULT_MODE] = "-" + self.args.data
-        elif self.args.python:
-            self.settings[Settings.DEFAULT_PYTHON_FILE] = "-" + self.args.data
-        elif self.args.json:
-            self.settings[Settings.DEFAULT_JSON_FILE] = "-" + self.args.data
-        else:
-            raise ValueError("set_default_handler: Invalid Arguement")
-
-    def handler(self):
-        if self.args.python and not self.args.data:
-            self.args.data = self.settings.default_python_file
-        elif self.args.json and not self.args.data:
-            self.args.data = self.settings.default_json_file
-        elif not self.args.json and not self.args.python and not self.args.text:
-            mode = self.settings.default_mode
-            if mode == PYTHON_MODE:
-                self.args.python = True
-            elif mode == JSON_MODE:
-                self.args.json = True
-            elif mode == TEXT_MODE:
-                self.args.text = True
-
-            self.args.data = self.settings.default_map[mode]
-
-    def reset(self):
-        self.settings.reset()
-        self.cache.clear()
 
 
 if __name__ == "__main__":
