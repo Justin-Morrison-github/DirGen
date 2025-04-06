@@ -1,4 +1,3 @@
-from genericpath import isdir
 from pathlib import Path
 import shutil
 
@@ -77,11 +76,14 @@ class Cache():
         return elem
 
     def delete_all_files(self):
-        for file in reversed(self.files):
+        while self.files:
+            file = self.files.pop()
             if file.is_dir():
-                # shutil.rmtree(str(file))
-
-                file.rmdir()
+                try:
+                    file.rmdir()
+                except Exception as e:
+                    file.chmod(0o777)
+                    file.rmdir()
             else:
                 file.unlink()
 
@@ -94,7 +96,7 @@ class Cache():
             print(file)
 
     def __str__(self):
-        return str([file.name for file in self.files])
+        return "\n".join(str(file) for file in self.files)
 
     def __repr__(self):
         # return f"Cache({self.files=}, {self.filepath=})"
