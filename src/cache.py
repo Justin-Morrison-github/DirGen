@@ -62,11 +62,12 @@ class Cache():
         with open(self.filepath, "w") as cache:
             pass
 
-    def append(self, file_to_append: Path):
+    def append(self, files_to_append: list[Path]):
         with open(self.filepath, "a") as cache:
-            if file_to_append not in self.files:
-                cache.write(str(file_to_append) + "\n")
-                self.files.append(file_to_append)
+            for file in files_to_append:
+                if file not in self.files:
+                    cache.write(str(file) + "\n")
+                    self.files.append(file)
 
         self._update()
 
@@ -122,7 +123,7 @@ if __name__ == "__main__":
         d.mkdir()
         d.chmod(0o777)  # Full read/write/execute permissions
 
-    cache = Cache(filename = "./.mytool_cache/test")
+    cache = Cache(filename = "./bin/test")
     print(cache)
 
     cache.append(a)
