@@ -23,7 +23,7 @@ class Parser():
 
             self.folder_stack.push(Path(key), self.base_folder)
             try:
-                folder = self.folder_stack.pop()
+                folder = self.folder_stack.peek()
                 folder.mkdir()
                 # os.mkdir(self.folder_stack.peek())
                 folder.chmod(0o777)  # Full read/write/execute permissions
