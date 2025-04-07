@@ -4,7 +4,4 @@ tempCodeRunnerFile
 .pytest_cache
 __pycache__
 .vscode/
-tests/
-dev/
-bin/cache
-bin/test
+dev/*
