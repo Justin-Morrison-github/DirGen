@@ -1,14 +1,10 @@
 import json
-
+import constants
 
 class Settings():
     DEFAULT_JSON_FILE = "default_json_file"
     DEFAULT_PYTHON_FILE = "default_python_file"
     DEFAULT_MODE = "default_mode"
-    map = {
-        "-py": DEFAULT_PYTHON_FILE,
-        "-j": DEFAULT_JSON_FILE,
-    }
 
     init_settings = {
         DEFAULT_JSON_FILE: "__default__.json",
@@ -16,13 +12,8 @@ class Settings():
         DEFAULT_MODE: "-j"
     }
 
-    mode_to_field = {
-        "-py": "python",
-        "-j": "json",
-        "-t": "text"
-    }
 
-    def __init__(self, settings_file):
+    def __init__(self, settings_file=constants.SETTINGS_FILE):
         self.settings_dict = {}
         self.settings_file = settings_file
         with open(self.settings_file, 'r') as settings_json:
