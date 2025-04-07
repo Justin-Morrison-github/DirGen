@@ -60,11 +60,9 @@ class Cache():
             pass
 
     def append(self, files_to_append: list[Path]):
-        with open(self.filepath, "a") as cache:
-            for file in files_to_append:
-                if file not in self.files:
-                    cache.write(str(file) + "\n")
-                    self.files.append(file)
+        for file in files_to_append:
+            if file not in self.files:
+                self.files.append(file)
 
         self._update()
 
@@ -99,46 +97,3 @@ class Cache():
     def __repr__(self):
         # return f"Cache({self.files=}, {self.filepath=})"
         return str([f"{file.parent.name}/{file.name}" for file in self.files])
-
-if __name__ == "__main__":
-
-        
-    a = Path().cwd()/ "A"
-    if not a.exists():
-        a.mkdir()
-        a.chmod(0o777)  # Full read/write/execute permissions
-
-    b = Path().cwd()/ "B"
-    if not b.exists():
-        b.mkdir()
-        b.chmod(0o777)  # Full read/write/execute permissions
-
-    c = Path().cwd()/ "C"
-    if not c.exists():
-        c.mkdir()
-        c.chmod(0o777)  # Full read/write/execute permissions
-
-    d = Path().cwd()/ "D"
-    if not d.exists():
-        d.mkdir()
-        d.chmod(0o777)  # Full read/write/execute permissions
-
-    cache = Cache(filename = "./bin/test")
-    print(cache)
-
-    cache.append(a)
-    cache.append(b)
-    cache.append(c)
-    print(cache)
-
-    print(cache.clear())
-    print(cache)
-
-    # cache.remove(a)
-    # print(cache)
-
-    # cache.append(d)
-    # print(cache)
-
-    # cache.delete_all_files()
-    # print(cache)
