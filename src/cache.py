@@ -1,11 +1,9 @@
 from pathlib import Path
-import shutil
-
-__DEFAULT_CACHE__ = "./bin/cache"
+from constants import DEFAULT_CACHE
 
 
 class Cache():
-    def __init__(self, filename: str | Path = __DEFAULT_CACHE__):
+    def __init__(self, filename: str | Path = DEFAULT_CACHE):
         self.filepath = Path(filename)
         if not self.filepath.exists():
             with open(self.filepath, "w"):

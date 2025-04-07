@@ -5,17 +5,9 @@ import argparse
 from pathlib import Path
 from Parser import PyParser, TextParser, JSONParser, Parser
 from cache import Cache
-from settings.settings import Settings
+from settings import Settings
 from tree import tree
-
-
-# DEFAULT_PYTHON_TARGET = "__mytool_target__"
-# DEFAULT_JSON_FILE = "test.json"
-SETTINGS_FILE = "./settings/settings.json"
-
-TEXT_MODE = "-t"
-PYTHON_MODE = "-py"
-JSON_MODE = "-j"
+import constants
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -76,19 +68,19 @@ class ArgParser():
             mode = self.settings.default_mode
             self.args.data = self.settings.default_map[mode]
 
-            if mode == PYTHON_MODE:
+            if mode == constants.PYTHON_MODE:
                 self.args.python = True
-            elif mode == JSON_MODE:
+            elif mode == constants.JSON_MODE:
                 self.args.json = True
-            elif mode == TEXT_MODE:
+            elif mode == constants.TEXT_MODE:
                 self.args.text = True
 
 
         if not self.args.data:
             if self.args.python:
-                self.args.data = self.settings.default_map[PYTHON_MODE]
+                self.args.data = self.settings.default_map[constants.PYTHON_MODE]
             elif self.args.json:
-                self.args.data = self.settings.default_map[JSON_MODE]
+                self.args.data = self.settings.default_map[constants.JSON_MODE]
             elif self.args.text:
                 raise ValueError("parse: No text provided")
             

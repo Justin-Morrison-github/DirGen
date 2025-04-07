@@ -1,14 +1,14 @@
+
 from importlib import import_module
 import sys
 import os
 # Adjusting path for imports
 curr_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(curr_dir)
-
-from FolderStack import FolderStack
-import json
+import constants
 from pathlib import Path
-
+import json
+from FolderStack import FolderStack
 
 
 class Parser():
