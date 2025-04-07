@@ -55,11 +55,12 @@ class Parser():
         return self.files_made
 
 
-
 class JSONParser(Parser):
     def __init__(self, base_folder, file):
         super().__init__(base_folder)
-        self.file = file
+        self.file = constants.CONFIG_FOLDER / file
+
+        # self.file = base_folder/ file
         self.dict = {}
 
         with open(self.file) as file:
@@ -73,9 +74,9 @@ class JSONParser(Parser):
 class PyParser(Parser):
     def __init__(self, base_folder, file: str):
         super().__init__(base_folder)
-        self.file = file
+        self.file = constants.CONFIG_FOLDER / Path(file)
 
-        py_file = import_module(file)
+        py_file = import_module(f"config.{file}")
         json_str = json.dumps(py_file.__target_dict__)
         self.dict = json.loads(json_str)
 
