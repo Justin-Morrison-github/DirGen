@@ -37,11 +37,11 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 class ArgParser():
-    def __init__(self, argv: list[str], settings: Settings, cache: Cache, base_folder=Path.cwd()):
+    def __init__(self, argv: list[str], settings: Settings, cache: Cache, dst_folder=Path.cwd()):
         self.argv = argv
         self.settings = settings
         self.cache = cache
-        self.base_folder = base_folder
+        self.dst_folder = dst_folder
         self.arg_parser: argparse.ArgumentParser = create_parser()
         self.args = None
         self.parser = None
@@ -83,12 +83,15 @@ class ArgParser():
                 self.args.data = self.settings.default_map[constants.JSON_MODE]
             elif self.args.text:
                 raise ValueError("parse: No text provided")
-            
-        self.parser = self.get_parser()
+
+        if any([self.args.python, self.args.json, self.args.text]):
+            self.parser = self.get_parser()
+            # self.files_made = self.parser.mkdir()
+            # self.cache.append(self.files_made)
+
+    def dirgen(self):
         self.files_made = self.parser.mkdir()
         self.cache.append(self.files_made)
-
-        
 
     def clear_handler(self):
         if self.args.cache:
@@ -116,21 +119,20 @@ class ArgParser():
         if self.args.text:
             if not self.args.data:
                 raise ValueError("-t: no text given")
-            parser = TextParser(self.base_folder, self.args.data)
+            parser = TextParser(self.dst_folder, self.args.data)
 
         elif self.args.python:
             if not self.args.data:
                 self.args.data = self.settings.default_python_file
-            parser = PyParser(self.base_folder, self.args.data.strip(".py"))
+            parser = PyParser(self.dst_folder, self.args.data.strip(".py"))
 
         elif self.args.json:
             if not self.args.data:
                 self.args.data = self.settings.default_json_file
-            parser = JSONParser(self.base_folder, self.args.data)
-
-        # else:
-        #     raise ValueError("mytool: Error Invalid Option")
-
+            parser = JSONParser(self.dst_folder, self.args.data)
+        else:
+            parser = None
+      
         return parser
 
     def set_handler(self):
