@@ -20,8 +20,8 @@ def main():
     arg_parser = ArgParser(argv[1:], settings, cache)
     arg_parser.parse()
 
-    # files_made: list[Path] = file_parser.mkdir()
-    # cache.append(files_made)
+    if arg_parser.parser:
+        arg_parser.dirgen()
 
     # for file in files_made:
     #     if file.is_dir() and file.parent == files_made[0].parent:
