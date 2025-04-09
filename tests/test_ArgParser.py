@@ -177,13 +177,13 @@ class TestArgParser(unittest.TestCase):
     def test_default_mode_handling(self):
         # Mocking attribute values directly
         self.settings.default_mode = constants.PYTHON_MODE
-        self.settings.default_map = {constants.PYTHON_MODE: "__default__.py"}
+        self.settings.default_map = {constants.PYTHON_MODE: "config/__default__.py"}
 
         with patch('sys.argv', ["dirgen"]):
             parser = ArgParser(argv=sys.argv[1:], settings=self.settings, cache=self.cache)
             parser.parse()
             self.assertTrue(parser.args.python)
-            self.assertEqual(parser.args.data, "__default__.py")
+            self.assertEqual(parser.args.data, "config/__default__.py")
 
     # def test_invalid_option(self):
     #     with patch('sys.argv', ["dirgen", "--invalid"]):
