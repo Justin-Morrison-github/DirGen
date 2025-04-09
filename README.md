@@ -1,13 +1,38 @@
-# DirGen
+# dirgen
 Generate files and folders from structured JSON, Python, or text
+
+
+## Installation
+```bash
+pip install dirgen 
+```
+
+## Dependencies
+See [requiremnts.txt](https://github.com/Justin-Morrison-github/DirGen)
+
 
 
 ## Usage
 
-
+Run with set default mode and file:
 ```bash
-DirGen 
+dirgen 
 ```
+Run with default python file:
+```bash
+dirgen -py
+```
+Run with default json file:
+```bash
+dirgen -j
+```
+Run with text provided:
+- text must be surrounded with double qoutes `""` and folder/file names should be within single qoutes `''`
+- text must be valid json syntax
+```bash
+dirgen -t "{'A':['test.py', 'test.c'], 'B': '$'}"
+```
+
 
 
                 
@@ -24,8 +49,8 @@ Arguements that can be passed
 
     Example:
     ```bash
-        DirGen -cache
-        DirGen --cache
+        dirgen -cache
+        dirgen --cache
     ```
         
 - `-clr`, `--clear=[Option]` 
@@ -36,31 +61,20 @@ Arguements that can be passed
 
     Example:
     ```bash
-        DirGen -clr
-        DirGen --clear
+        dirgen -clr
+        dirgen --clear
     ```
         
 
-- `-p`, `--print=[Option]` 
+- `-set`, `--set=Option New_Data` 
     <div style="margin-top: 10px;"></div>      
-    flag to print, if no option given print ___
-    <div style="margin-top: 10px;"></div>      
-
-    Example:
-    ```bash
-        DirGen -p
-        DirGen --print
-    ```
-
-- `-sd`, `--set_default=Option New_Data` 
-    <div style="margin-top: 10px;"></div>      
-    flag to set_default
+    flag to set options
     <div style="margin-top: 10px;"></div>      
 
     Example:
     ```bash
-        DirGen -sd
-        DirGen --set_default
+        dirgen -set
+        dirgen --set
     ```
 
 - `-m`, `--mode=Option New_Data` 
@@ -70,8 +84,8 @@ Arguements that can be passed
 
     Example:
     ```bash
-        DirGen -m
-        DirGen --mode
+        dirgen -m
+        dirgen --mode
     ```
 
 -------
