@@ -8,7 +8,9 @@ pip install dirgen
 ```
 
 ## Dependencies
-See [requirements.txt](https://github.com/Justin-Morrison-github/DirGen/requirements.txt)
+- Python: 3.12
+
+See [requirements.txt](https://github.com/Justin-Morrison-github/DirGen/blob/master/requirements.txt)
 
 
 
