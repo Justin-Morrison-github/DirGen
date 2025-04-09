@@ -29,7 +29,7 @@ class Settings():
         }
 
     def __str__(self):
-        return str(self.settings_dict)
+        return "\n".join(f"{f'{key.upper()}:':<25} {val}" for key, val in self.settings_dict.items())
 
     def __repr__(self):
         return repr(self.settings_dict)
@@ -40,7 +40,11 @@ class Settings():
         with open(self.settings_file, "w") as json_file:
             json.dump(self.settings_dict, json_file)
 
-    def reset(self):
+    def reset(self, verbose:bool):
         self.settings_dict = Settings.init_settings
         with open(self.settings_file, "w") as json_file:
             json.dump(self.settings_dict, json_file)
+
+        if verbose:
+            print("\nSettings Reset")
+            print(self)

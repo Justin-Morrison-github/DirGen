@@ -71,7 +71,10 @@ class Cache():
         self._update()
         return elem
 
-    def delete_all_files(self):
+    def delete_all_files(self, verbose:bool = False):
+        if verbose:
+            print("Deleted files found in cache")
+
         while self.files:
             file = self.files.pop()
             if file.is_dir():
@@ -83,7 +86,8 @@ class Cache():
             else:
                 file.unlink()
 
-            print(f"Removed {file}")
+            if verbose:
+                print(f"Removed {file}")
 
         self.clear()
 
@@ -92,7 +96,9 @@ class Cache():
             print(file)
 
     def __str__(self):
-        return "\n".join(str(file) for file in self.files)
+        if self.files:
+            return "\n".join(str(file) for file in self.files)
+        return "Cache Empty"
 
     def __repr__(self):
         # return f"Cache({self.files=}, {self.filepath=})"

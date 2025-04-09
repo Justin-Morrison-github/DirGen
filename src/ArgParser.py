@@ -159,13 +159,14 @@ class ArgParser():
 
     def reset_handler(self):
         if self.args.cache:
-            self.cache.delete_all_files()
-        elif self.args.config:
-            self.settings.reset()
-        elif not self.args.config and not self.args.cache:
-            self.cache.delete_all_files()
-            self.settings.reset()
+            self.cache.delete_all_files(self.args.verbose)
 
+        elif self.args.config:
+            self.settings.reset(self.args.verbose)
+
+        elif not self.args.config and not self.args.cache:
+            self.cache.delete_all_files(self.args.verbose)
+            self.settings.reset(self.args.verbose)
 
 
 if __name__ == "__main__":
