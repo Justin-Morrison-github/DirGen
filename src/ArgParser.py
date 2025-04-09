@@ -14,18 +14,24 @@ def create_parser() -> argparse.ArgumentParser:
     arg_parser = argparse.ArgumentParser(description="MyTool - Command Line Options")
 
     options = [
-        {"flags": ("-c", "--cache"), "action": "store_true", "help": "Cache options"},
+        # Commands/Operations
         {"flags": ("-clr", "--clear"), "action": "store_true", "help": "Clear options"},
-        {"flags": ("-m", "--mode"), "action": "store_true", "help": "Mode options"},
+        {"flags": ("-del", "--delete"), "action": "store_true", "help": "Delete options"},
+        {"flags": ("-r", "--reset"), "action": "store_true", "help": "Reset options"},
+
+        # Modes
         {"flags": ("-t", "--text"), "action": "store_true", "help": "Provide text input"},
         {"flags": ("-j", "--json"), "action": "store_true", "help": "Provide JSON file input"},
         {"flags": ("-py", "--python"), "action": "store_true", "help": "Provide Python file input"},
-        {"flags": ("-f", "--force"), "action": "store_true", "help": "Force operations"},
-        {"flags": ("-del", "--delete"), "action": "store_true", "help": "Delete options"},
-        {"flags": ("-r", "--reset"), "action": "store_true", "help": "Reset options"},
+
+        # Options
+        {"flags": ("-cfg_m", "--config_mode"), "action": "store_true", "help": "Set defaut mode"},
+        {"flags": ("-cfg_py", "--config_python"), "action": "store_true", "help": "Set defaut python file"},
+        {"flags": ("-cfg_j", "--config_json"), "action": "store_true", "help": "Set defaut json file"},
         {"flags": ("-cfg", "--config"), "action": "store_true", "help": "Provide config/settings options"},
-        {"flags": ("-set", "--set"), "action": "store_true", "help": "Set options"},
-        {"flags": ("-get", "--get"), "action": "store_true", "help": "Get options"},
+        {"flags": ("-f", "--force"), "action": "store_true", "help": "Force operations"},
+        {"flags": ("-c", "--cache"), "action": "store_true", "help": "Cache options"},
+        {"flags": ("-v", "--verbose"), "action": "store_true", "help": "Prints messages to stdout on file/folder creation"},
     ]
 
     for option in options:
@@ -47,6 +53,13 @@ class ArgParser():
         self.parser = None
         self.files_made = []
 
+    def only(self, arg: bool | str):
+        for key,val in vars(self.args).items(): # Iterate over all of the args in the Namespace
+            if val != arg and val:
+                return False
+        return arg == True
+
+
     def parse(self) -> argparse.Namespace:
         self.args = self.arg_parser.parse_args(self.argv)
 
@@ -58,10 +71,26 @@ class ArgParser():
             return self.clear_handler()    
         elif self.args.delete:
             return self.delete_handler()   
-        elif self.args.set:
-            return self.set_handler()
-        elif self.args.get:
-            return self.get_handler()
+        
+        elif self.args.config_mode:
+            return self.default_mode_handler()
+        elif self.args.config_python:
+            return self.default_python_handler()
+        elif self.args.config_json:
+            return self.default_json_handler()
+        elif self.args.config:
+            return self.config_handler()
+        
+        elif self.args.python:
+            return self.python_handler()
+        elif self.args.json:
+            return self.json_handler()
+        elif self.args.text:
+            return self.text_handler()
+
+        elif self.only(self.args.cache):
+            return print(self.cache)
+
 
         # Handle Defaults
         elif not any([self.args.json, self.args.python, self.args.text]):
@@ -75,19 +104,31 @@ class ArgParser():
             elif mode == constants.TEXT_MODE:
                 self.args.text = True
 
+    def config_handler(self):
+        if self.only(self.args.config):
+            print(self.settings)
 
-        if not self.args.data:
-            if self.args.python:
-                self.args.data = self.settings.default_python_file
-            elif self.args.json:
-                self.args.data = self.settings.default_json_file
-            elif self.args.text:
-                raise ValueError("parse: No text provided")
+    def default_mode_handler(self):
+        if self.args.data:
+            self.settings[Settings.DEFAULT_MODE] = "-" + self.args.data
+        else:
+            self.args.data = self.settings.default_mode
+            print(self.args.data)
 
-        if any([self.args.python, self.args.json, self.args.text]):
-            self.parser = self.get_parser()
-            # self.files_made = self.parser.mkdir()
-            # self.cache.append(self.files_made)
+    def default_python_handler(self):
+        if self.args.data:
+            self.settings[Settings.DEFAULT_PYTHON_FILE] = self.args.data
+        else:
+            self.args.data = self.settings.default_python_file
+            print(self.args.data)
+
+    def default_json_handler(self):
+        if self.args.data:
+            self.settings[Settings.DEFAULT_JSON_FILE] = self.args.data
+        else:
+            self.args.data = self.settings.default_json_file
+            print(self.args.data)
+
 
     def dirgen(self):
         self.files_made = self.parser.mkdir()
@@ -99,52 +140,22 @@ class ArgParser():
 
     def delete_handler(self):
         if self.args.cache:
-            self.cache.delete_all_files()
+            self.cache.delete_all_files(self.args.verbose)
 
-    def get_handler(self):
-        if self.args.cache:
-            self.args.data = str(self.cache)
-        elif self.args.python:
+    def python_handler(self):
+        if not self.args.data:
             self.args.data = self.settings.default_python_file
-        elif self.args.json:
+        self.parser = PyParser(self.dst_folder, self.args.data.strip(".py"))
+
+    def json_handler(self):
+        if not self.args.data:
             self.args.data = self.settings.default_json_file
-        elif self.args.mode:
-            self.args.data = self.settings.default_mode
-        elif self.args.config:
-            self.args.data = str(self.settings)
-        
-        print(self.args.data)
+        self.parser = JSONParser(self.dst_folder, self.args.data)
 
-    def get_parser(self) -> Parser:
-        if self.args.text:
-            if not self.args.data:
-                raise ValueError("-t: no text given")
-            parser = TextParser(self.dst_folder, self.args.data)
-
-        elif self.args.python:
-            if not self.args.data:
-                self.args.data = self.settings.default_python_file
-            parser = PyParser(self.dst_folder, self.args.data.strip(".py"))
-
-        elif self.args.json:
-            if not self.args.data:
-                self.args.data = self.settings.default_json_file
-            parser = JSONParser(self.dst_folder, self.args.data)
-        else:
-            parser = None
-      
-        return parser
-
-    def set_handler(self):
-        if self.args.config:
-            if self.args.mode:
-                self.settings[Settings.DEFAULT_MODE] = "-" + self.args.data
-            elif self.args.python:
-                self.settings[Settings.DEFAULT_PYTHON_FILE] = self.args.data
-            elif self.args.json:
-                self.settings[Settings.DEFAULT_JSON_FILE] = self.args.data
-        else:
-            raise ValueError("set_handler: Invalid Arguement")
+    def text_handler(self):
+        if not self.args.data:
+            raise ValueError("-t: no text given")
+        self.parser = TextParser(self.dst_folder, self.args.data)
 
     def reset_handler(self):
         if self.args.cache:
