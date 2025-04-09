@@ -78,9 +78,9 @@ class ArgParser():
 
         if not self.args.data:
             if self.args.python:
-                self.args.data = self.settings.default_map[constants.PYTHON_MODE]
+                self.args.data = self.settings.default_python_file
             elif self.args.json:
-                self.args.data = self.settings.default_map[constants.JSON_MODE]
+                self.args.data = self.settings.default_json_file
             elif self.args.text:
                 raise ValueError("parse: No text provided")
 
