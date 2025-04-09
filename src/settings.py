@@ -7,8 +7,8 @@ class Settings():
     DEFAULT_MODE = "default_mode"
 
     init_settings = {
-        DEFAULT_JSON_FILE: "__default__.json",
-        DEFAULT_PYTHON_FILE: "__default__.py",
+        DEFAULT_JSON_FILE: "config/__default__.json",
+        DEFAULT_PYTHON_FILE: "config/__default__.py",
         DEFAULT_MODE: "-j"
     }
 
