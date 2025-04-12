@@ -2,7 +2,7 @@ import os
 from unittest.mock import Mock
 from src.cache import Cache
 import unittest
-import constants
+import src.constants as constants
 
 
 class TestMockCache(unittest.TestCase):
