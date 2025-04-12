@@ -1,10 +1,8 @@
-
-import os
 import sys
 from parameterized import parameterized
 from pathlib import Path
 from unittest.mock import Mock, patch
-from src.ArgParser import ArgParser, create_parser, Cache, Settings
+from src.ArgParser import ArgParser, Cache, Settings, Arg
 import constants
 
 import unittest
@@ -177,6 +175,62 @@ class TestArgParser(unittest.TestCase):
     #         parser = ArgParser(argv=["--invalid"], settings=self.settings, cache=self.cache)
     #         with self.assertRaises(SystemExit):  # argparse raises SystemExit on invalid arguments
     #             parser.parse()
+
+
+class TestOnly(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.settings = Settings(constants.SETTINGS_FILE)
+        cls.cache = Mock(spec=Cache)
+        with patch('sys.argv', ["dirgen"]):
+            cls.parser = ArgParser(argv=sys.argv[1:], settings=cls.settings, cache=cls.cache)
+        cls.parser.parse()
+
+
+    @parameterized.expand([
+        (Arg.CACHE, "-c", True, None),
+        (Arg.CLEAR, "-clr", True, None),
+        (Arg.DELETE, "-del", True, None),
+        (Arg.RESET, "-r", True, None),
+    ])
+    def test_only2(self, arg, mode, expected_val, expected_exception):
+        with patch('sys.argv', ["dirgen", mode]):
+            parser = ArgParser(argv=sys.argv[1:], settings=self.settings, cache=self.cache)
+
+            if expected_exception:
+                with self.assertRaises(expected_exception):
+                    parser.parse()
+            else:
+                parser.parse()
+
+            self.assertEqual(expected_val, parser.only(arg), f"{arg}: Error")
+
+    def test_only(self):
+        for arg in Arg:
+            self.assertFalse(self.parser.only_exempt(arg, [Arg.TEXT, Arg.JSON, Arg.PYTHON]), f"{arg}: Error")
+
+    @parameterized.expand([
+        (Arg.CACHE, "-c", True, [], None),
+        (Arg.CLEAR, "-clr", True, [], None),
+        (Arg.DELETE, "-del", True, [], None),
+        (Arg.RESET, "-r", True, [], None),
+        (Arg.CONFIG_MODE, "-cfg_m", True, [Arg.DATA], None),
+        (Arg.TEXT, "-t", True, [Arg.DATA], ValueError),
+        (Arg.JSON, "-j", True,  [Arg.DATA], None),
+        (Arg.PYTHON, "-py", True,  [Arg.DATA], None),
+    ])
+    def test_only_exempt(self, arg, mode, expected_val, exempt_args, expected_exception):
+        with patch('sys.argv', ["dirgen", mode]):
+            parser = ArgParser(argv=sys.argv[1:], settings=self.settings, cache=self.cache)
+
+            if expected_exception:
+                with self.assertRaises(expected_exception):
+                    parser.parse()
+            else:
+                parser.parse()
+
+            self.assertEqual(expected_val, parser.only_exempt(arg, exempt_args), f"{arg}: Error")
 
 
 if __name__ == "__main__":
