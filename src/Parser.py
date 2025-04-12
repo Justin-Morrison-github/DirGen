@@ -2,6 +2,7 @@
 from importlib import import_module
 import sys
 import os
+from types import ModuleType
 # Adjusting path for imports
 curr_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(curr_dir)
@@ -12,7 +13,7 @@ from FolderStack import FolderStack
 
 
 class Parser():
-    def __init__(self, base_folder):
+    def __init__(self, base_folder:Path):
         self.base_folder = base_folder
         self.files_made: list[Path] = []
 
@@ -56,27 +57,26 @@ class Parser():
 
 
 class JSONParser(Parser):
-    def __init__(self, base_folder, file):
+    def __init__(self, base_folder:Path, file:str):
         super().__init__(base_folder)
         self.file = Path(file)
         self.dict = {}
 
         with open(self.file) as file:
             self.dict = json.load(file)
-            print(self.dict)
 
     def mkdir(self):
         return super().mkdir()
 
 
 class PyParser(Parser):
-    def __init__(self, base_folder, file: str):
+    def __init__(self, base_folder:Path, file: str):
         super().__init__(base_folder)
         self.file = Path(file)
 
-        import_string = path_to_import_str(self.file)
-        py_file = import_module(import_string)
-        json_str = json.dumps(py_file.__target_dict__)
+        self.import_string = path_to_import_str(self.file)
+        self.py_file: ModuleType = import_module(self.import_string)
+        json_str = json.dumps(self.py_file.__target_dict__)
         self.dict = json.loads(json_str)
 
     def mkdir(self):
@@ -84,7 +84,7 @@ class PyParser(Parser):
 
 
 class TextParser(Parser):
-    def __init__(self, base_folder, text: str):
+    def __init__(self, base_folder:Path, text: str):
         super().__init__(base_folder)
 
         self.text = text.replace("'", "\"")
@@ -96,4 +96,4 @@ class TextParser(Parser):
 
 def path_to_import_str(file: Path):
     str = ".".join(part for part in file.parts)
-    return str.strip(".json")
+    return str.strip(".py")
