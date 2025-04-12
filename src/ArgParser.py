@@ -1,45 +1,33 @@
-import os, sys
-curr_dir =os.path.dirname(os.path.abspath(__file__))
+from json import JSONDecodeError
+import os
+import sys
+curr_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(curr_dir)
-import argparse
-from pathlib import Path
-from Parser import PyParser, TextParser, JSONParser, Parser
-from cache import Cache
-from settings import Settings
-from tree import tree
+from enum import StrEnum, auto
 import constants
+from tree import tree
+from settings import Settings
+from cache import Cache
+from Parser import PyParser, TextParser, JSONParser, Parser
+from pathlib import Path
+from argparse import ArgumentError, ArgumentTypeError, ArgumentParser, Namespace
 
 
-def create_parser() -> argparse.ArgumentParser:
-    arg_parser = argparse.ArgumentParser(description="MyTool - Command Line Options")
-
-    options = [
-        # Commands/Operations
-        {"flags": ("-clr", "--clear"), "action": "store_true", "help": "Clear options"},
-        {"flags": ("-del", "--delete"), "action": "store_true", "help": "Delete options"},
-        {"flags": ("-r", "--reset"), "action": "store_true", "help": "Reset options"},
-
-        # Modes
-        {"flags": ("-t", "--text"), "action": "store_true", "help": "Provide text input"},
-        {"flags": ("-j", "--json"), "action": "store_true", "help": "Provide JSON file input"},
-        {"flags": ("-py", "--python"), "action": "store_true", "help": "Provide Python file input"},
-
-        # Options
-        {"flags": ("-cfg_m", "--config_mode"), "action": "store_true", "help": "Set defaut mode"},
-        {"flags": ("-cfg_py", "--config_python"), "action": "store_true", "help": "Set defaut python file"},
-        {"flags": ("-cfg_j", "--config_json"), "action": "store_true", "help": "Set defaut json file"},
-        {"flags": ("-cfg", "--config"), "action": "store_true", "help": "Provide config/settings options"},
-        {"flags": ("-f", "--force"), "action": "store_true", "help": "Force operations"},
-        {"flags": ("-c", "--cache"), "action": "store_true", "help": "Cache options"},
-        {"flags": ("-v", "--verbose"), "action": "store_true", "help": "Prints messages to stdout on file/folder creation"},
-    ]
-
-    for option in options:
-        arg_parser.add_argument(*option['flags'], action=option['action'], help=option['help'])
-
-    arg_parser.add_argument("data", type=str, nargs="?", default=None, help="Provide filename/text input")
-
-    return arg_parser
+class Arg(StrEnum):
+    CLEAR = auto()
+    DELETE = auto()
+    RESET = auto()
+    TEXT = auto()
+    JSON = auto()
+    PYTHON = auto()
+    CONFIG_MODE = auto()
+    CONFIG_PYTHON = auto()
+    CONFIG_JSON = auto()
+    CONFIG = auto()
+    FORCE = auto()
+    CACHE = auto()
+    VERBOSE = auto()
+    DATA = auto()
 
 
 class ArgParser():
@@ -48,19 +36,50 @@ class ArgParser():
         self.settings = settings
         self.cache = cache
         self.dst_folder = dst_folder
-        self.arg_parser: argparse.ArgumentParser = create_parser()
+        self.arg_parser: ArgumentParser = self.create_arg_parser()
         self.args = None
         self.parser = None
         self.files_made = []
 
-    def only(self, arg: bool | str):
-        for key,val in vars(self.args).items(): # Iterate over all of the args in the Namespace
-            if val != arg and val:
-                return False
-        return arg == True
+    def create_arg_parser(self) -> ArgumentParser:
+        arg_parser = ArgumentParser(description="MyTool - Command Line Options")
+
+        self.options = [
+            # Commands/Operations
+            {"flags": ("-clr", "--clear"), "action": "store_true", "help": "Clear options"},
+            {"flags": ("-del", "--delete"), "action": "store_true", "help": "Delete options"},
+            {"flags": ("-r", "--reset"), "action": "store_true", "help": "Reset options"},
+
+            # Modes
+            {"flags": ("-t", "--text"), "action": "store_true", "help": "Provide text input"},
+            {"flags": ("-j", "--json"), "action": "store_true", "help": "Provide JSON file input"},
+            {"flags": ("-py", "--python"), "action": "store_true", "help": "Provide Python file input"},
+
+            # Options
+            {"flags": ("-cfg_m", "--config_mode"), "action": "store_true", "help": "Set defaut mode"},
+            {"flags": ("-cfg_py", "--config_python"), "action": "store_true", "help": "Set defaut python file"},
+            {"flags": ("-cfg_j", "--config_json"), "action": "store_true", "help": "Set defaut json file"},
+            {"flags": ("-cfg", "--config"), "action": "store_true", "help": "Provide config/settings options"},
+
+            # Flags
+            {"flags": ("-f", "--force"), "action": "store_true", "help": "Force operations"},
+            {"flags": ("-c", "--cache"), "action": "store_true", "help": "Cache options"},
+            {"flags": ("-v", "--verbose"), "action": "store_true",
+             "help": "Prints messages to stdout on file/folder creation"},
+        ]
+
+        self.action_map = {}
+        for option in self.options:
+            arg = arg_parser.add_argument(*option['flags'], action=option['action'], help=option['help'])
+            self.action_map[option['flags'][1].lstrip("--")] = arg
+
+        data_arg = arg_parser.add_argument("data", type=str, nargs="?", default=None, help="Provide filename/text input")
+        self.action_map["data"] = data_arg
 
 
-    def parse(self) -> argparse.Namespace:
+        return arg_parser
+
+    def parse(self) -> Namespace:
         self.args = self.arg_parser.parse_args(self.argv)
 
         # Only allow one operator to be used at once
